@@ -36,10 +36,18 @@ package-dir = { "" = "packages/analysis/src" }
 [tool.setuptools.packages.find]
 where = ["packages/analysis/src"]
 
+[tool.setuptools.package-data]
+secondear_analysis = [
+  "resources/*.dict",
+  "resources/*.csv",
+  "resources/*.md",
+  "resources/*.txt",
+]
+
 [tool.pytest.ini_options]
 addopts = "-ra"
-testpaths = ["tests"]
-pythonpath = ["packages/analysis/src"]
+testpaths = ["tests", "packages/analysis/tests", "apps/api/tests"]
+pythonpath = ["packages/analysis/src", "apps/api/src"]
 markers = [
   "ebu: conformance tests that require the external EBU Loudness Test Set",
   "integration: end-to-end analysis package tests",

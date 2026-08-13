@@ -51,6 +51,8 @@ A complete result should contain:
 
 Mixing v1 returns direct and estimated metrics even when the score is unavailable. It never creates a
 placeholder zero when input, separation, confidence, profile, or release evidence is insufficient.
+English Rhymes 0.1 follows the same rule: pronunciation review or failed applicability minimums
+return an explicit status and a null score while preserving all available evidence.
 
 ## Finding
 
@@ -82,7 +84,7 @@ truncated files, undefined formulas, and other applicability conditions.
 
 ## Scores
 
-Mixing v1 implements the first criterion score under the draft methodology in
+Mixing v1 and English Rhymes 0.1 implement criterion scoring under the draft methodology in
 `docs/SCORING.md`. A score remains permitted only with a public formula, weights, evidence,
 confidence, algorithm version, genre profile, and applicability rules. Scores describe performance
 against named SecondEar analytical criteria, not universal artistic value or listener preference.

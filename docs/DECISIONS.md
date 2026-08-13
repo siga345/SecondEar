@@ -229,19 +229,20 @@ source code, documentation, schemas, findings, or UI copy.
 
 **Status:** Accepted on 2026-08-14
 
-North American English (`en-US`) replaces Russian as the first implemented language profile for the
-Rhymes criterion. The first complete research slice accepts manually supplied, line-broken lyrics,
-uses a caller-provided CMU Pronouncing Dictionary file, and permits explicit ARPAbet pronunciation
-overrides for names, slang, dialect forms, and out-of-vocabulary tokens.
+English replaces Russian as the first implemented language for the Rhymes criterion. The complete
+0.1 slice accepts manually supplied, line-broken lyrics and supports caller-selected `en-US` and
+`en-GB` pronunciation profiles. It parses pinned official CMU Pronouncing Dictionary and Britfone
+3.0.1 data through repository-owned adapters and permits occurrence-level ARPAbet or IPA overrides
+for names, slang, dialect forms, homographs, and out-of-vocabulary tokens.
 
 The implementation must return traceable pronunciation choices, rhyme pairs, families, schemes,
 metrics, analyzer version, dictionary fingerprint, confidence, and applicability. It may not infer a
 performed pronunciation from text alone. Audio transcription and alignment remain later stages.
 
-No public 1--10 Rhymes score will be emitted until a lawful English benchmark corpus, annotation
-protocol, genre profiles, formula, thresholds, and held-out validation results are documented. The
-analyzer will expose the measurements needed for that calibration without substituting an arbitrary
-score.
+A deterministic public 1--10 score is emitted when the documented applicability gates pass. Formula
+0.1, six genre-weight profiles, seed piecewise-linear anchors, independent confidence, and validation
+targets are published in `docs/SCORING.md`. The seed anchors are explicitly provisional until the
+owner corpus is calibrated and validated. Recognition cohorts are not automatic high scores.
 
 Commercial song lyrics and audio, including Grammy-recognized works, must not be downloaded,
 redistributed, or committed without the necessary rights. Research runs may analyze lawfully

@@ -14,3 +14,10 @@ __pycache__/
 apps/web/.next/
 apps/web/node_modules/
 apps/web/out/
+coverage/
+*.tsbuildinfo
+
+# Private research material
+research-data/*
+!research-data/README.md
+!research-data/.gitignore

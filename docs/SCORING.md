@@ -2,7 +2,7 @@
 
 **Status:** Draft methodology 0.1
 
-**Implementation status:** Mixing v1 engine implemented; no public profiles released
+**Implementation status:** Mixing v1 engine and English Rhymes 0.1 vertical slice implemented
 
 **Last updated:** 2026-08-14
 
@@ -137,91 +137,128 @@ appropriateness rather than poetic beauty.
 - beat grid and section boundaries;
 - genre profile and lyrical comparison corpus.
 
-### Initial English-language scope
+### English 0.1 implementation scope
 
-North American English (`en-US`) is the first supported language profile. This is a language-support
-decision, not a claim that rhyme matters more or less in English than in other languages. The
-analyzer contract remains language-neutral, while pronunciation, phoneme similarity, morphology,
-and corpus expectations belong to versioned language profiles. Russian support may be added later
-and must not reuse English thresholds or phoneme costs without validation.
+The implemented pronunciation profiles are North American English (`en-US`) and Standard Southern
+British/RP English (`en-GB`). Pronunciation, phoneme similarity, morphology, and corpus expectations
+are versioned so later languages do not inherit English thresholds without validation.
 
-The first implementation stage is text-only and accepts manually submitted, line-broken lyrics. It
-uses a versioned CMU Pronouncing Dictionary file and accepts explicit pronunciation overrides for
-names, slang, contractions, dialect forms, and other out-of-vocabulary tokens. It does not infer
-lyrics from audio or claim that a dictionary pronunciation is identical to the performed vocal.
-Audio alignment, performed-pronunciation correction, cross-line internal rhyme, and code-switching
-remain later stages.
+The analyzer is text-only. It parses pinned official CMU Pronouncing Dictionary data for `en-US` and
+pinned Britfone 3.0.1 data for `en-GB` through repository-owned adapters. It accepts occurrence- or
+word-level ARPAbet/IPA overrides for names, slang, homographs, dialect forms, and out-of-vocabulary
+tokens. It never substitutes an American pronunciation for a missing British entry and never claims
+that dictionary pronunciation is the performed pronunciation.
 
-The initial detector exposes evidence before producing a score:
+The detector:
 
-1. normalize text while preserving line and section boundaries;
-2. resolve all documented pronunciation variants and lexical stress;
-3. extract rhyme zones from the primary stressed vowel and following phonemes;
-4. compare rhyme zones with a documented, feature-weighted phoneme distance;
-5. distinguish exact, approximate, and identity rhyme relations;
-6. group pairwise matches into rhyme families, line-ending schemes, and chains;
-7. return metrics, uncertainty, analyzer versions, dictionary identity, and source spans.
+1. normalizes text while preserving line, section, and source-character coordinates;
+2. resolves pronunciation and requires review of ambiguous line endings;
+3. forms one- to three-word phrases of no more than four syllables;
+4. extracts a rhyme zone from the final stressed vowel through the final phoneme;
+5. compares zones with symmetric feature-weighted phoneme edit distance;
+6. classifies exact, near, identity, assonance, and consonance relationships;
+7. retains best non-overlapping evidence within bounded windows;
+8. creates complete-link line-ending families, schemes, and chains;
+9. returns metrics, findings, confidence, versions, and source spans.
 
-Exact spelling or unweighted edit distance over letters is insufficient because English spelling
-does not reliably encode pronunciation and phoneme substitutions are not equally perceptible. When
-a token has multiple dictionary pronunciations, the text-only detector reports the best supported
-candidate and reduces confidence rather than claiming to know the performed variant.
+Line endings are compared within four-line windows of one section. Internal candidates are compared
+within a line and its two neighboring lines. Exact repeated sections are analyzed once for
+construction, while their occurrence count remains a separate measured metric. Section schemes use
+family letters and `X` for singleton endings.
 
-For the text-only stage, line, token, and syllable counts are `measured`; pronunciations and rhyme
-relations are `estimated`; density, family, scheme, and chain metrics are `derived`; and future
-corpus-relative predictability will be `benchmarked`. A criterion score remains unavailable until an
-English annotation protocol, genre profiles, comparison corpus, formula, and validation thresholds
-are accepted.
+Exact spelling and unweighted character distance are not used as rhyme evidence. The phoneme model
+weights vowel features, consonant place and manner, voicing, stress, insertions, and deletions. A
+scoring near rhyme requires total similarity of at least `0.72` and stressed-vowel similarity of at
+least `0.60`.
 
-### Candidate components
+Line and token counts are `measured`; pronunciations and rhyme relationships are `estimated`; density,
+family, scheme, chain, components, and score are `derived`; future corpus-relative interpretations
+will be `benchmarked`.
 
-- rhyme density relative to lines and syllables;
-- mean phonetic match length and similarity;
-- multisyllabic, internal, and line-ending rhyme rates;
-- diversity of rhyme families;
-- longest and typical rhyme-chain lengths;
-- rhyme-scheme consistency;
-- information value of rhyme pairs relative to the corpus;
-- same-word, same-lemma, and same-grammatical-ending rates;
-- penalties for excessive mechanical reuse or highly predictable pairs.
+### Formula 0.1
 
-The scoring weights must vary by genre. Technical rap may reward dense internal and multisyllabic
-construction, while pop, punk, singer-songwriter, or spoken-word profiles may require different
-expectations.
+| Profile | Strength | Density | Complexity | Diversity | Development |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Rap | 20% | 25% | 25% | 20% | 10% |
+| Pop | 25% | 20% | 15% | 15% | 25% |
+| R&B | 25% | 20% | 20% | 15% | 20% |
+| Rock | 30% | 15% | 15% | 20% | 20% |
+| Country | 30% | 15% | 10% | 25% | 20% |
+| Electronic | 25% | 15% | 10% | 15% | 35% |
 
-Repeated words, identical rhyme zones, and highly common rhyme families must remain visible instead
-of receiving the same eventual credit as diverse construction. Repetition used as a refrain must
-also remain distinguishable from accidental or mechanical reuse.
+The five component keys are `phonetic_strength`, `rhyme_density_and_coverage`,
+`construction_complexity`, `family_and_lexical_diversity`, and
+`scheme_and_section_development`. Public piecewise-linear seed anchors map every raw component into
+the selected tag profile before aggregation:
 
-### Initial anchors
+```text
+index = sum(component_subscore * genre_weight)
+score = clamp(round(1 + 9 * index, 1), 1, 10)
+```
 
-- **10:** high genre-relative density, diverse schemes, complex construction, and limited mechanical
-  repetition.
-- **7:** stable and varied rhyme construction, primarily using simpler devices.
-- **5:** a functional basic system dominated by line endings and limited variety.
-- **3:** sparse, accidental, highly repetitive, or frequently weak phonetic relationships.
+Exact, near, and identity relationships contribute to formula 0.1. Assonance and consonance are
+evidence only. Same-word, conservatively derived same-lemma, and rhyme-family reuse affect only the
+diversity component. Unknown or ambiguous lemmas are neutral.
+
+The seed anchors are reproducible initial profiles, not empirical genre claims. The owner pilot must
+replace or confirm them using at least ten lawful local texts per primary tag. A formula, anchor,
+threshold, dictionary, or feature change requires a new version.
 
 ### Confidence and applicability
 
-Confidence depends on language support, phoneme quality, alignment quality, vocal intelligibility,
-and the effects of unusual pronunciation, code-switching, mumbling, pitch correction, or formant
-processing. Instrumentals, insufficient text, unsupported languages, or failed alignment may result
-in `insufficient_data`.
+```text
+confidence = 0.45 * pronunciation_coverage
+           + 0.25 * line_ending_coverage
+           + 0.15 * pronunciation_certainty
+           + 0.15 * section_parsing_certainty
+```
+
+Confidence is independent and never multiplied by the score. A score requires at least eight unique
+non-empty lines, 40 lexical tokens, 85% pronunciation coverage, 90% line-ending coverage, and review
+of every ambiguous line-ending pronunciation. Blocking issues return
+`needs_pronunciation_review`; other failed minimums return `insufficient_data`, never zero.
 
 ### User evidence and limitations
 
-The report should highlight detected rhymes and show density, multisyllabic and internal rhyme rates,
-diversity, and chain length. Intentional simplicity may be a valid artistic choice; the criterion
-measures rhyme construction under the selected profile, not the quality of poetry as a whole.
+The report exposes families using both color and letter labels, line schemes, relationship filters,
+phonemes, similarity, components, metrics, versions, findings, and limitations. Intentional simplicity
+may be a valid artistic choice; the criterion measures rhyme construction under the selected profile,
+not poetry quality or listener preference.
 
-### Initial research references
+### Research references
 
-These sources inform the research direction but do not yet define the scoring formula:
+These sources inform the implementation and validation direction:
 
 - [CMU Pronouncing Dictionary](https://github.com/cmusphinx/cmudict)
+- [Britfone](https://github.com/JoseLlarena/Britfone)
 - [Detecting Rhyming Words](https://repository.tudelft.nl/record/uuid%3A31a34297-aa48-4f02-aa78-e45389a7c779)
 - [Supervised Rhyme Detection with Siamese Recurrent Networks](https://aclanthology.org/W18-4509/)
 - [Discovering Lexical Similarity Through Articulatory Feature-based Phonetic Edit Distance](https://arxiv.org/abs/2008.06865)
+
+### Calibration and validation protocol
+
+The owner pilot contains at least ten lawful local texts for each of the six primary tags. The full
+corpus expands to at least 100 texts per tag and uses a `60/20/20` calibration, validation, and
+untouched holdout split. Splits are grouped by songwriter so one writer cannot leak into calibration
+and holdout. After the pilot, two independent annotators are added; individual scores, disagreement,
+and disputed cases are preserved rather than replacing them with only an average.
+
+Grammy winners and nominees may form an external recognition cohort, but recognition does not imply
+a Rhymes score of 9 or 10. In particular, [Song of the Year](https://www.grammy.com/awards/categories/song-of-the-year/)
+recognizes songwriting as a whole rather than rhyme construction alone.
+
+The release targets on untouched data are:
+
+- exact line-ending rhyme F1 of at least `0.95`;
+- accepted-rhyme macro-F1 of at least `0.85`, reported independently for `en-US` and `en-GB`;
+- Spearman correlation with the owner score of at least `0.70`;
+- mean absolute score error no greater than `1.25` during the owner pilot and `1.0` after three-way
+  annotation.
+
+Commercial lyrics remain in gitignored lawful local storage. Repository fixtures are synthetic or
+public domain, while research output contains hashes, indexed annotations, and derived values only.
+The optional Genius URL is provenance metadata and is never scraped. Automated import remains behind
+the `LyricsProvider` interface until an official permission or licensed endpoint exists.
 
 ## 2. Imagery
 
