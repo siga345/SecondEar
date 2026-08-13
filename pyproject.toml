@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "secondear-analysis"
+version = "0.1.0"
+description = "Explainable technical music analysis for SecondEar"
+readme = "packages/analysis/README.md"
+requires-python = ">=3.12,<3.13"
+license = { text = "License selection pending" }
+authors = [{ name = "SecondEar contributors" }]
+dependencies = [
+  "numpy>=1.26,<3",
+  "pyebur128==0.1.1",
+  "scipy>=1.12,<2",
+  "soundfile>=0.12,<1",
+]
+
+[project.optional-dependencies]
+separation = [
+  "demucs==4.0.1",
+  "torch>=2.2,<3",
+]
+dev = [
+  "pytest>=8,<10",
+  "ruff==0.16.3",
+]
+
+[project.scripts]
+secondear-mixing = "secondear_analysis.cli:main"
+
+[tool.setuptools]
+package-dir = { "" = "packages/analysis/src" }
+
+[tool.setuptools.packages.find]
+where = ["packages/analysis/src"]
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+testpaths = ["tests"]
+pythonpath = ["packages/analysis/src"]
+markers = [
+  "ebu: conformance tests that require the external EBU Loudness Test Set",
+  "integration: end-to-end analysis package tests",
+]

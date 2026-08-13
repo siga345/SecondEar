@@ -6,7 +6,8 @@ The analysis model records what was observed, how it was produced, and how confi
 defend it. It is designed before individual analyzers so future metrics can be added without changing
 the entire API.
 
-The examples in this document are conceptual and do not yet define a final Python or JSON schema.
+The examples in this document remain conceptual across all criteria. Mixing v1 now provides the first
+concrete Python domain schema in `packages/analysis`.
 
 ## Evidence types
 
@@ -48,7 +49,8 @@ A complete result should contain:
 - findings when the active slice supports them
 - explicit status for unavailable domains
 
-The first slice should return only technical file metrics. It must not create placeholder scores.
+Mixing v1 returns direct and estimated metrics even when the score is unavailable. It never creates a
+placeholder zero when input, separation, confidence, profile, or release evidence is insufficient.
 
 ## Finding
 
@@ -80,9 +82,34 @@ truncated files, undefined formulas, and other applicability conditions.
 
 ## Scores
 
-Scores are deferred. A future score is permitted only with a public formula, weights, evidence,
-confidence, algorithm version, and applicability rules. Scores describe performance against named
-SecondEar analytical criteria, never artistic value or listener preference.
+Mixing v1 implements the first criterion score under the draft methodology in
+`docs/SCORING.md`. A score remains permitted only with a public formula, weights, evidence,
+confidence, algorithm version, genre profile, and applicability rules. Scores describe performance
+against named SecondEar analytical criteria, not universal artistic value or listener preference.
+
+Conceptually, a criterion result should contain:
+
+```json
+{
+  "criterion": "structure",
+  "score": 6,
+  "raw_score": 6.4,
+  "scale_max": 10,
+  "confidence": 0.82,
+  "status": "evaluated",
+  "genre_profile": "core-pop-0.1.0",
+  "formula_version": "structure-score-0.1.0",
+  "evidence": ["section_similarity", "onset_density_delta"]
+}
+```
+
+Mixing's concrete model distinguishes raw metrics, penalty blocks, continuous raw score, half-up
+integer public score, confidence, and findings. It represents `not_evaluated` and
+`insufficient_data` without substituting zero. Future criteria may use criterion-specific fields but
+must preserve these conceptual distinctions.
+
+The nominal overall scale is 90 points across nine criteria. Overall aggregation is valid only under
+the accepted missing-criterion and weighting policies; it must never silently rescale partial results.
 
 ## Reproducibility
 

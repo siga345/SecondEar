@@ -8,23 +8,42 @@ musicians an independent, evidence-based view of their own tracks.
 
 ## Project status
 
-SecondEar is in its initial architecture and technical decision phase. The repository currently
-contains the project boundaries, proposed monorepo structure, analytical data model, roadmap, and
-open implementation decisions. It does not contain a working audio analyzer yet.
+SecondEar now contains the first framework-independent implementation of the Mixing criterion. It
+accepts a lossless stereo master, extracts direct DSP and EBU R128 measurements, uses Demucs only as
+a bounded stem estimator, and applies an inspectable genre-profile formula. The engine does not use
+an LLM or an opaque score-prediction model.
 
-The first planned vertical slice is intentionally small:
+The implemented Mixing v1 pipeline is:
 
 ```text
-Audio upload
-  -> validation
-  -> decoding
-  -> duration, sample rate, and channel count
-  -> typed API result
-  -> web display
+WAV/FLAC stereo master + primary genre + optional reference
+  -> validation and full decoding
+  -> loudness, dynamics, spectrum, stereo, and integrity measurements
+  -> Demucs htdemucs_ft stem estimates for element-balance measurements
+  -> versioned genre-profile penalties
+  -> typed MixingResult
 ```
 
-No scoring, subjective evaluation, AI opinion, persistence, authentication, or advanced DSP belongs
-in this slice.
+No public Mixing profiles are bundled yet. Until a lawful 50-track corpus for a genre passes
+calibration, validation, holdout, and conformance gates, the engine returns `insufficient_data`
+instead of inventing a score. The complete contract is documented in
+[docs/MIXING.md](docs/MIXING.md); the nine-criterion methodology is documented in
+[docs/SCORING.md](docs/SCORING.md).
+
+## Local development
+
+Python 3.12 is required.
+
+```bash
+python3.12 -m venv .venv
+.venv/bin/pip install -e '.[dev,separation]'
+.venv/bin/python -m pytest -q
+.venv/bin/secondear-mixing analyze track.wav --genre rap --pretty
+```
+
+The first Demucs run downloads the pinned `htdemucs_ft` weights. Run the opt-in real-model smoke
+test with `SECONDEAR_RUN_DEMUCS=1`; see [docs/MIXING.md](docs/MIXING.md) for the EBU conformance
+fixture setup and profile-building workflow.
 
 ## Repository map
 
@@ -39,6 +58,7 @@ SecondEar/
 │   ├── PRODUCT.md
 │   ├── ARCHITECTURE.md
 │   ├── ANALYSIS_MODEL.md
+│   ├── SCORING.md
 │   ├── DECISIONS.md
 │   └── ROADMAP.md
 ├── fixtures/                # Synthetic and redistributable test audio
@@ -47,12 +67,9 @@ SecondEar/
 └── AGENTS.md                # Durable project rules for coding agents
 ```
 
-## Contributing at this stage
+## Contributing
 
-Start with [AGENTS.md](AGENTS.md), then read the documents in `docs/`. During the current phase,
-contributions should clarify requirements, compare implementation options, or improve architecture
-without prematurely selecting libraries or adding production code.
-
-Runtime setup, development commands, CI, and dependency installation instructions will be added when
-the first implementation choices are accepted. The open-source license is also intentionally pending
-an explicit project decision.
+Start with [AGENTS.md](AGENTS.md), then read the documents in `docs/`. Analytical changes must preserve
+the evidence chain, version formulas and profiles, and include deterministic synthetic tests. Do not
+commit commercial audio, corpus masters, Demucs weights, or generated measurements containing source
+content. The open-source license is still pending an explicit project decision.

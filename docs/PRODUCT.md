@@ -6,7 +6,8 @@ Artists and producers lose analytical distance after repeated exposure to the sa
 provides a fresh, independent view by reporting properties that can be measured, computationally
 estimated, formally derived, or compared with explicit references.
 
-SecondEar evaluates evidence, not taste. It must not impersonate a listener or critic.
+SecondEar evaluates evidence, not taste. It may produce direct criticism and scores against published
+criteria, but it must not impersonate a listener or present personal preference as analysis.
 
 ## Product principles
 
@@ -27,9 +28,37 @@ SecondEar evaluates evidence, not taste. It must not impersonate a listener or c
 
 ## Non-goals
 
-SecondEar does not determine whether a song is good, beautiful, original, emotionally powerful, or
-likely to be popular. It does not score vibe, atmosphere, charisma, enjoyment, emotional impact, or
-artistic value. It is not an LLM wrapper and must not depend on an external AI service for core use.
+SecondEar does not determine whether a song is beautiful, emotionally powerful, enjoyable, or likely
+to be popular. It does not score vibe, atmosphere, emotional impact, or universal artistic value. It
+may identify a weak result under a named SecondEar criterion when the conclusion is supported by the
+criterion's evidence and applicability rules.
+
+The UI may use Charisma as a familiar label only for the formalized Expressive Delivery criterion. It
+does not measure emotional belief or listener attachment. SecondEar is not an LLM wrapper and must not
+depend on an external AI service for core use.
+
+## 90-point methodology
+
+The draft methodology contains nine criteria worth up to 10 points each:
+
+1. Rhymes
+2. Imagery
+3. Structure
+4. Rhythm
+5. Artist Performance
+6. Mixing
+7. Sound Production
+8. Individuality
+9. Charisma
+
+The first four emphasize phonetic, linguistic, structural, and rhythmic construction. Artist
+Performance evaluates only the vocal or rap part and uses the internal key `vocal_performance`.
+Instrumental execution, arrangement, and sound design belong to Sound Production. Individuality is
+defined as statistical distinctiveness. Charisma uses the internal key `expressive_delivery` and is
+defined as controlled vocal variation rather than psychological charisma.
+
+The methodology, limitations, calibration policy, and unresolved formula decisions are documented in
+`docs/SCORING.md`.
 
 ## Long-term analytical domains
 
@@ -41,15 +70,16 @@ Each domain is optional until its evidence, algorithms, confidence model, applic
 tests are documented. Semantic section names such as verse or chorus should not be asserted when the
 system can only defend anonymous boundaries such as Section A or Section B.
 
-## First vertical slice
+## First implemented criterion slice
 
-The initial working product will accept WAV, FLAC, and MP3 files, validate and decode the audio,
-measure duration, sample rate, and channel count, return a typed response through FastAPI, and display
-the values in a simple Next.js interface.
+Mixing v1 accepts one lossless stereo WAV/FLAC master from 30 seconds through 10 minutes, one of six
+core genres, and an optional lossless reference. It measures technical integration, uses bounded
+source separation for element-balance evidence, and calculates an open five-block score only when a
+lawful released profile exists. MP3 is not a product Mixing format.
 
-This slice deliberately excludes persistence, user accounts, scoring, findings, references, advanced
-analysis, and AI. Its purpose is to prove the boundaries between the web client, API, and reusable
-analysis engine.
+The initial surface is a Python API and CLI. It deliberately excludes persistence, user accounts,
+recommendations, and AI-generated opinion. FastAPI and the web report follow after actual separation
+latency and resource requirements are measured.
 
 ## Initial interface direction
 
