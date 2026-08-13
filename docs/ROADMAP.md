@@ -72,14 +72,16 @@ research uncertainty, is:
 The order is not a dependency guarantee. A criterion may remain in research while a later one moves
 forward if its evidence, datasets, or validation method become ready earlier.
 
-### Active criterion slice: Mixing
+### Active criterion slices
 
 The framework-independent Mixing engine and CLI are implemented. Current work is corpus acquisition,
 official conformance, controlled-defect validation, and the release of six lawful genre profiles. No
 public score is emitted before the selected profile passes these gates.
 
-English Rhymes remains a separate research slice with text-derived evidence and no public score. It
-is no longer the active implementation focus.
+English Rhymes 0.1 is also implemented across the Python engine, FastAPI, and Next.js. It emits a
+deterministic score when its published applicability gates pass. Remaining Rhymes work is lawful
+owner-pilot calibration, two additional annotators, and songwriter-grouped validation and holdout
+evaluation for both pronunciation profiles.
 
 ## Later research phases
 

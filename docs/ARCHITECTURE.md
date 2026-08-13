@@ -22,6 +22,21 @@ layers call the same API after full-pipeline latency is measured. The public Mix
 limited to lossless WAV and FLAC; isolated research tooling may accept explicitly lossy MP3 input but
 cannot produce a public Mixing profile or score.
 
+## Implemented English Rhymes boundary
+
+```text
+Next.js paste or local text file
+  -> POST /v1/rhymes/analyze
+  -> thin Pydantic transport mapping
+  -> framework-independent text and pronunciation engine
+  -> deterministic rhyme evidence and score
+  -> typed report
+```
+
+The Rhymes transport is synchronous and non-persistent. The client reads UTF-8 `.txt` and `.md`
+files locally and sends the extracted text in JSON. The API does not write lyrics to temporary files,
+databases, provider APIs, or application logs. A source reference is provenance metadata only.
+
 ## Repository responsibilities
 
 ### `packages/analysis`

@@ -24,6 +24,22 @@ WAV/FLAC stereo master + primary genre + optional reference
   -> typed MixingResult
 ```
 
+The repository also contains the complete English Rhymes 0.1 text slice:
+
+```text
+English lyrics
+  -> normalized sections and source spans
+  -> pinned en-US or en-GB pronunciation
+  -> rhyme pairs, families, schemes, metrics, and findings
+  -> genre-profile score with independent confidence
+  -> synchronous FastAPI response
+  -> accessible Next.js report
+```
+
+Rhymes analyzes only caller-supplied text. It does not transcribe audio, scrape lyrics, use an LLM,
+or infer performed pronunciation. The deterministic 0.1 score uses published seed anchors that are
+explicitly marked as awaiting private-corpus calibration and held-out validation.
+
 No public Mixing profiles are bundled yet. Until a lawful 50-track corpus for a genre passes
 calibration, validation, holdout, and conformance gates, the engine returns `insufficient_data`
 instead of inventing a score. The complete contract is documented in
@@ -50,8 +66,8 @@ fixture setup and profile-building workflow.
 ```text
 SecondEar/
 ├── apps/
-│   ├── api/                 # Planned FastAPI transport layer
-│   └── web/                 # Planned Next.js analytical interface
+│   ├── api/                 # FastAPI Rhymes transport layer
+│   └── web/                 # Next.js Rhymes report
 ├── packages/
 │   └── analysis/            # Framework-independent analysis engine
 ├── docs/
@@ -61,7 +77,8 @@ SecondEar/
 │   ├── SCORING.md
 │   ├── DECISIONS.md
 │   └── ROADMAP.md
-├── fixtures/                # Synthetic and redistributable test audio
+├── fixtures/                # Synthetic and redistributable test inputs
+├── research-data/           # Gitignored local-corpus workflow
 ├── scripts/                 # Development and maintenance commands
 ├── tests/                   # Cross-package and end-to-end tests
 └── AGENTS.md                # Durable project rules for coding agents
